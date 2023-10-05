@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchImages } from 'api';
 import Button from 'components/Buton/Button';
-import { Searchbar } from '../Searchbar/Searchbar';
+import Searchbar from '../Searchbar/Searchbar';
 import ImageGallery from '../ImageGallery/ImageGallery';
 import Modal from '../Modal/Modal';
 import Loader from '../Loader';

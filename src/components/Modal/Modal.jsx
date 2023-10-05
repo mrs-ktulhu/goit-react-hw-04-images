@@ -2,11 +2,10 @@ import {useEffect} from 'react';
 import { Overlay, Modals } from './Modal.styled';
 
 export default function Modal({largeImageUrl,alt,closeModal}) {
-  console.log(largeImageUrl,alt,closeModal);
   useEffect(() => {
 
     const handleKeyDown = (e) => {
-      console.log(largeImageUrl,alt,closeModal);
+    
       if (e.code === 'Escape') {
         closeModal();
       }
@@ -22,7 +21,6 @@ export default function Modal({largeImageUrl,alt,closeModal}) {
 
 
   const handleBackdropClick = (e) => {
-    console.log(largeImageUrl,alt,closeModal);
     if (e.target === e.currentTarget) {
       closeModal();
     }

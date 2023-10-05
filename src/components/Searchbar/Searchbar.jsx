@@ -1,36 +1,33 @@
-import React, { Component } from 'react';
+import {useState} from 'react';
 import Notiflix from 'notiflix';
 import { BsSearch } from 'react-icons/bs';
 import { Searchbars, Searchform,SearchButton,SearchButtonLabel,SearchInput } from './Searchbar.styled';
 
-export class Searchbar extends Component {
-  state = {
-    searchQuery: '',
+export default function Searchbar({handleFormSubmit}) {
+
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const handleChange = e => {
+    const { value } = e.target;
+    setSearchQuery(value)
+
   };
 
-  handleChange = e => {
-    const { name, value } = e.target;
-    this.setState({ [name]: value });
-  };
-
-  handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    const { searchQuery } = this.state;
 
     if (searchQuery.trim() === '') {
       Notiflix.Notify.failure('Please enter a search query');
     }
     else {
-      this.props.handleFormSubmit(searchQuery);
-      this.setState({ searchQuery: '' });
+      handleFormSubmit(searchQuery);
+      setSearchQuery('') ;
     }
   };
 
-  render() {
     return (
       <Searchbars>
-        <Searchform role="search" onSubmit={this.handleSubmit}>
+        <Searchform role="search" onSubmit={handleSubmit}>
           <SearchButton type="submit" >
             <BsSearch>
               <SearchButtonLabel>Search</SearchButtonLabel>
@@ -43,11 +40,11 @@ export class Searchbar extends Component {
             autoFocus
             placeholder="Search images and photos"
             name="searchQuery"
-            value={this.state.searchQuery}
-            onChange={this.handleChange}
+            value={searchQuery}
+            onChange={handleChange}
           />
         </Searchform>
       </Searchbars>
     );
   }
-}
+
