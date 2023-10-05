@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { fetchImages } from 'api';
 import Button from 'components/Buton/Button';
 import { Searchbar } from '../Searchbar/Searchbar';
@@ -7,94 +7,67 @@ import Modal from '../Modal/Modal';
 import Loader from '../Loader';
 import { AppStyled } from './App.styled';
 
-export class App extends Component {
-  state = {
-    photos: [],
-    showModal: false,
-    largeImageUrl: '',
-    isLoading: false,
-    searchQuery: '',
-    page: 1,
-  };
+export default function App() {
 
-  componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      this.fetchImages();
+  const [photos, setPhotos] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [largeImageUrl, setLargeImageUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    if (searchQuery) {
+      setIsLoading(true);
+      fetchImages(searchQuery, page)
+        .then(newPhotos => {
+          setPhotos(prevPhotos => [...prevPhotos, ...newPhotos]);
+        })
+        .catch(error => {
+          console.log('Error fetching images:', error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
-  }
+  }, [searchQuery, page]);
 
-  handleFormSubmit = query => {
-    this.setState({ query, page: 1, photos: [] });
+  const handleFormSubmit = (searchQuery) => {
+    setSearchQuery(searchQuery);
+    setPage(1);
+    setPhotos([]);
   };
 
-  openModal = imageSrc => {
-    this.setState({ showModal: true, selectedImage: imageSrc });
+  const closeModal = ()=> {
+    setShowModal(false);
   };
 
-  closeModal = () => {
-    this.setState({ showModal: false, selectedImage: '' });
+  const handleClickLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  handleClickLoadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const handleImageClick = (largeImageUrl) => {
+    setLargeImageUrl(largeImageUrl);
+    setShowModal(true);
   };
 
-  handleSearch = async searchQuery => {
-    const photos = await fetchImages(searchQuery);
-    this.setState({ photos: photos, searchQuery });
-  };
-
-  handleImageClick = (largeImageUrl) => {
-    this.setState({ largeImageUrl, showModal: true });
-  };
-
-  fetchImages = () => {
-    const { query, page } = this.state;
-
-    this.setState({ isLoading: true });
-
-    fetchImages(query, page)
-      .then(photos => {
-        this.setState(prevState => ({
-          photos: [...prevState.photos, ...photos],
-        }));
-      })
-      .catch(error => {
-        console.log('Error fetching images:', error);
-      })
-      .finally(() => {
-        this.setState({ isLoading: false });
-      });
-    // window.scrollTo({
-    //   top: page,
-    //   behavior: "smooth",
-    // })
-  };
-
-  render() {
-    const { showModal, isLoading, photos, largeImageUrl } = this.state;
-
-    return (
-      <AppStyled>
-        <Searchbar handleFormSubmit={this.handleFormSubmit} />
-        <ImageGallery
-          photos={photos}
-          onPhotoClick={this.handleImageClick}
-          searchQuery={this.state.searchQuery}
+  return (
+    <AppStyled>
+      <Searchbar handleFormSubmit={handleFormSubmit} />
+      <ImageGallery
+        photos={photos}
+        onPhotoClick={handleImageClick}
+        searchQuery={searchQuery}
+      />
+      {isLoading && <Loader />}
+      {!!photos.length && !isLoading && <Button onClick={handleClickLoadMore} />}
+      {showModal && (
+        <Modal
+          largeImageUrl={largeImageUrl}
+          alt="Large Image"
+          closeModal={closeModal}
         />
-        {isLoading && <Loader />}
-        {!!photos.length && !isLoading &&   <Button onClick={this.handleClickLoadMore} />}
-        {showModal && (
-          <Modal
-            largeImageUrl={largeImageUrl}
-            alt="Large Image"
-            onClose={this.closeModal} 
-          />
-        )}
-      </AppStyled>
-    );
-  }
+      )}
+    </AppStyled>
+  );
 }
